@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "746693676870",
+    "firebase_url": "https://run-with-friends-1b808.firebaseio.com",
+    "project_id": "run-with-friends-1b808",
+    "storage_bucket": "run-with-friends-1b808.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:746693676870:android:c6b848ea14a361b79d5f47",
+        "android_client_info": {
+          "package_name": "com.lukasnewman.runwithfriends"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "746693676870-sc3l1sh7m5k9vcifk745u8c4onbsb6op.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCxD_1LH1xBHWt7j_MDjfmuyshlUaeZfjc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "746693676870-sc3l1sh7m5k9vcifk745u8c4onbsb6op.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,2 @@
+rootProject.name='RunWithFriends'
+include ':app'

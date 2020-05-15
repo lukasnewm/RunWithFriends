@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">RunWithFriends</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="todo">TODO</string>
+    <string name="textViewProfileBio">I Love To Run!</string>
+    <string name="text_notifications_string">Previous Workouts</string>
+    <string name="editTextUsernameHint">Username</string>
+    <string name="buttonStartText">Start</string>
+    <string name="buttonStopText">Stop</string>
+    <string name="textViewTimeText">"Time: "</string>
+    <string name="textViewDistanceText">"Distance: "</string>
+</resources>
