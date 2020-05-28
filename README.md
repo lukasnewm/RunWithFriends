@@ -6,6 +6,7 @@ This app is a Workout tracking app. Current features implemented so far:
 1. Log in and/or create account
 2. Workout fragment shows map with user location
 3. Starting workout
+
   a. GPS tracks distance
   b. tracks time
   c. updates live on map
