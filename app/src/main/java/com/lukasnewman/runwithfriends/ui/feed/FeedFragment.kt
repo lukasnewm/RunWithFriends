@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.lukasnewman.runwithfriends.R
+import com.lukasnewman.runwithfriends.Workout
 
 class FeedFragment : Fragment() {
 
@@ -30,10 +31,20 @@ class FeedFragment : Fragment() {
     }
 
     private lateinit var database: DatabaseReference
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        database = FirebaseDatabase.getInstance().getReference()
+        database = FirebaseDatabase.getInstance().getReference("Workouts/AllWorkouts")
+
+
+    }
+
+    private fun getAllWorkouts() {
+
+        var workouts : ArrayList<Workout>
+
+        
 
     }
 }

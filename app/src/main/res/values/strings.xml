@@ -11,4 +11,7 @@
     <string name="buttonStopText">Stop</string>
     <string name="textViewTimeText">"Time: "</string>
     <string name="textViewDistanceText">"Distance: "</string>
+    <string name="editTextWorkoutTitleHint">Workout Title</string>
+    <string name="buttonCancelText">Cancel</string>
+    <string name="buttonPostText">Post</string>
 </resources>

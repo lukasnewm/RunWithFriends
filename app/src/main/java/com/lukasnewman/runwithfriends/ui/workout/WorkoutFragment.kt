@@ -1,24 +1,26 @@
 package com.lukasnewman.runwithfriends.ui.workout
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.location.Location
 import android.os.Bundle
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.*
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.tasks.Task
+import com.google.android.gms.maps.model.*
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.lukasnewman.runwithfriends.R
+import com.lukasnewman.runwithfriends.Workout
 import kotlinx.android.synthetic.main.fragment_workout.*
 
 class WorkoutFragment : Fragment(), OnMapReadyCallback {
@@ -34,13 +36,20 @@ class WorkoutFragment : Fragment(), OnMapReadyCallback {
     private var distance = 0.0
     private var displacement = 0.0
     private var workingOut = false
+    private var time = 0
+    private var locList = ArrayList<LatLng>()
     private lateinit var lastLocation: Location
-    private lateinit var startLocation: Location
-    private lateinit var endLocation: Location
 
     //Phone GPS Variables (My First Attempt)
     private lateinit var locationCallback: LocationCallback
     private lateinit var locationRequest: LocationRequest
+
+    //Google Maps ui features
+    private lateinit var mPolyline: Polyline
+
+    //Firebase Stuff
+    private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var database: DatabaseReference
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -69,6 +78,10 @@ class WorkoutFragment : Fragment(), OnMapReadyCallback {
         }
 
         buttonStop.isVisible = false
+        editTextWorkoutTitle.isVisible = false
+        buttonCancel.isVisible = false
+        buttonPost.isVisible = false
+
         getLastKnownLocation()
         getLocationUpdates()
 
@@ -77,7 +90,6 @@ class WorkoutFragment : Fragment(), OnMapReadyCallback {
 
             if (buttonStart.text == "Start") {
                 workingOut = true
-                startLocation = lastLocation
                 buttonStart.text = "Pause"
                 buttonStop.isVisible = true
             }
@@ -91,7 +103,42 @@ class WorkoutFragment : Fragment(), OnMapReadyCallback {
         //Stop the workout
         buttonStop.setOnClickListener(View.OnClickListener { v: View ->
             workingOut = false
-            endLocation = lastLocation
+            //endLocation = lastLocation
+            stopLocationUpdates()
+            mPolyline = googleMap!!.addPolyline(PolylineOptions().clickable(true).addAll(locList))
+
+            buttonPost.isVisible = true
+            buttonCancel.isVisible = true
+            buttonStart.isVisible = false
+            buttonStop.isVisible = false
+            editTextWorkoutTitle.isVisible = true
+        })
+
+        //Post the workout
+        buttonPost.setOnClickListener(View.OnClickListener { v: View ->
+
+            if (editTextWorkoutTitle.text.isNotEmpty()) {
+
+                var workout = Workout(distance, locList, time, editTextWorkoutTitle.text.toString(), "CaptainNovak", FirebaseAuth.getInstance().currentUser!!.uid)
+
+                firebaseAuth = FirebaseAuth.getInstance()
+                val user = firebaseAuth.currentUser
+                database = FirebaseDatabase.getInstance().reference
+
+                database.child("Workouts").child(user!!.uid).push().setValue(workout)
+                database.child("AllWorkouts").push().setValue(workout)
+
+
+            } else {
+                Toast.makeText(requireContext(), "Please Enter A Title!", Toast.LENGTH_SHORT).show()
+            }
+            resetWorkout()
+
+        })
+
+        //Cancel the workout
+        buttonCancel.setOnClickListener(View.OnClickListener { v: View ->
+            resetWorkout()
         })
     }
 
@@ -118,10 +165,12 @@ class WorkoutFragment : Fragment(), OnMapReadyCallback {
 
         //update the distance
         if (workingOut) {
+            locList.add(loc)
             displacement = currentLocation.distanceTo(lastLocation).toDouble()
             displacement *= 0.00062137
             distance += displacement
-            textViewDistance.text = "Distance: " + distance + " miles"
+            textViewDistanceRecycle.text = "Distance: " + distance + " miles"
+
         }
 
         lastLocation = currentLocation
@@ -129,6 +178,23 @@ class WorkoutFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun getLastKnownLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
                 lastLocation = location
@@ -156,6 +222,23 @@ class WorkoutFragment : Fragment(), OnMapReadyCallback {
     }
 
     private fun startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return
+        }
         fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, null)
     }
 
@@ -170,6 +253,27 @@ class WorkoutFragment : Fragment(), OnMapReadyCallback {
 
     override fun onResume() {
         super.onResume()
+        startLocationUpdates()
+    }
+
+    private fun resetWorkout() {
+        //Reset the workout
+        mPolyline.remove()
+
+        buttonPost.isVisible = false
+        buttonCancel.isVisible = false
+        buttonStart.text = "Start"
+        buttonStart.isVisible = true
+        editTextWorkoutTitle.isVisible = false
+        editTextWorkoutTitle.setText("")
+
+        textViewDistanceRecycle.text = "Distance: "
+        textViewTimeRecycle.text = "Time: "
+
+        distance = 0.0
+        displacement = 0.0
+        time = 0
+        locList.clear()
         startLocationUpdates()
     }
 }
